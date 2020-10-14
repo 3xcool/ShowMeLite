@@ -1,6 +1,8 @@
-package com.andrefilgs.showme.model
+package com.andrefilgs.showmelite.model
 
-
+/**
+ * @author André Filgueiras on 14/10/2020
+ */
 
 enum class WatcherType(val type: Int) {
     PUBLIC(2),       //anyone can see

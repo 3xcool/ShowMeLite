@@ -1,8 +1,8 @@
-package com.andrefilgs.showmelite
+package com.andrefilgs.showmelite.utils
 
 
 /**
- * Created by André Filgueiras on 14/10/2020
+ * @author André Filgueiras on 14/10/2020
  */
 fun Boolean?.orDefault(default: Boolean = false): Boolean {
   if (this == null)

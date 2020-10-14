@@ -1,36 +1,18 @@
-package com.andrefilgs.showme.utils
+package com.andrefilgs.showmelite.utils
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import com.andrefilgs.showme.LogcatType
-import com.andrefilgs.showme.ShowMeLogger
+
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.memberProperties
 
 /**
+ * @author André Filgueiras on 14/10/2020
  * Auxiliary class to find UTF-8 chars
  */
 class Utils() {
 
   companion object {
 
-    /**
-     * Pass a listof key value pairs to assign object properties, where key is the field name.
-     *
-     * @param obj
-     */
-    fun setFields(obj: Any, fieldsToChange: List<Pair<String, Any?>>) {
-      val nameToProperty = obj::class.memberProperties.associateBy(KProperty<*>::name)
-      fieldsToChange.forEach { (propertyName, propertyValue) ->
-        nameToProperty[propertyName]
-          .takeIf { it is KMutableProperty<*> }
-          ?.let { it as KMutableProperty<*> }
-          ?.let { it.setter.call(obj, propertyValue) }
-      }
-    }
+
 
     fun getNow(): Long {
       return System.currentTimeMillis()
@@ -65,27 +47,7 @@ class Utils() {
 
     fun utf8Decode(bytes: ByteArray) = String(bytes, Charsets.UTF_8).codePointAt(0)
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
-    //args: Array<String>
-    fun example() {
-      val codePoints = intArrayOf(0x0041, 0x00F6, 0x0416, 0x20AC, 0x1D11E)
-      println("Char  Name                                 Unicode  UTF-8         Decoded")
-      for (codePoint in codePoints) {
-        var n = if (codePoint <= 0xFFFF) 4 else 5
 
-//        System.out.printf("%-${n}c  %-35s  U+%05X  ", codePoint, Character.getName(codePoint), codePoint)
-        ShowMeLogger.log(java.lang.String.format("%-${n}c  %-35s  U+%05X  ", codePoint, Character.getName(codePoint), codePoint), LogcatType.ERROR, null)
-
-        val bytes = utf8Encode(codePoint)
-        var s = ""
-        for (byte in bytes) s += "%02X ".format(byte)
-        val decoded = utf8Decode(bytes)
-        n = if (decoded <= 0xFFFF) 12 else 11
-//        System.out.printf("%-${n}s  %c\n", s, decoded)
-
-        ShowMeLogger.log(java.lang.String.format("%-${n}s  %c\n", s, decoded), LogcatType.ERROR, null)
-      }
-    }
 
     fun generateUtfChars(begin:Int =32, end: Int=100){
       val sb = StringBuilder()
@@ -94,8 +56,6 @@ class Utils() {
         val decoded = utf8Decode(bytes)
         sb.append(java.lang.String.format("%c", decoded))
       }
-//      Logger.debugEntire(sb.toString())
-      ShowMeLogger.log(sb.toString(), LogcatType.ERROR, null)
     }
 
     fun generateAllUtfChars(){

@@ -1,23 +1,12 @@
-package com.andrefilgs.showme
+package com.andrefilgs.showmelite
 
 
-import android.content.Context
 import android.os.SystemClock
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import com.andrefilgs.fileman.Fileman
-import com.andrefilgs.fileman.FilemanDrivers
-import com.andrefilgs.fileman.auxiliar.FilemanLogger
-import com.andrefilgs.fileman.auxiliar.orDefault
-import com.andrefilgs.fileman.workmanager.FilemanWM
-import com.andrefilgs.showme.model.LogType
-import com.andrefilgs.showme.model.WatcherType
-import com.andrefilgs.showme.senders.Sender
-import com.andrefilgs.showme.senders.ShowMeHttpSender
-import com.andrefilgs.showme.utils.Utils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.andrefilgs.showmelite.model.LogType
+import com.andrefilgs.showmelite.model.WatcherType
+import com.andrefilgs.showmelite.utils.Utils
+import com.andrefilgs.showmelite.utils.orDefault
 import java.util.*
 import kotlin.math.min
 
@@ -226,30 +215,26 @@ class ShowMe(var mShowMeStatus: Boolean = true, var mTAG: String = "ShowMe", pri
 
 
   private fun isLoggable(logType: LogType? = defaultLogType, watcherType: WatcherType? = defaultWatcherType): Boolean {
-    //    if(showMeStatus == null || logType == null || watcherType == null) return false
     if (logType == null || watcherType == null) return false
-    //    if (!mShowMeStatus) return false
     if (watcherType.type < mWatcherTypeMode.type) return false
     if (logType.type < mLogTypeMode.type) return false
     return true
   }
 
   private fun prepareLogMsg(msg: String, logType: LogType? = defaultLogType, wrapMsg: Boolean? = defaultWrapMsg, logId: Int? = defaultLogId, withTimePrefix: Boolean? = true): String? {
-
-    //    if(!isLoggable(mShowMeStatus, logType, watcherType)) return null
-
+    
     var outputMsg = if (wrapMsg!!) wrapMessage(msg) else msg
 
     outputMsg = when (logType) {
       LogType.VERBOSE -> outputMsg
       LogType.SUCCESS -> "$defaultCharSuccess $outputMsg"
-      LogType.ERROR -> "$defaultCharError $outputMsg"
+      LogType.ERROR   -> "$defaultCharError $outputMsg"
       LogType.WARNING -> "$defaultCharWarning $outputMsg"
-      LogType.EVENT -> "$defaultCharEvent $outputMsg"
-      LogType.INFO -> "$defaultCharInfo $outputMsg"
-      LogType.DETAIL -> "$defaultCharDetail $outputMsg"
-      LogType.DEBUG -> "$defaultCharDebug $outputMsg"
-      else -> outputMsg
+      LogType.EVENT   -> "$defaultCharEvent $outputMsg"
+      LogType.INFO    -> "$defaultCharInfo $outputMsg"
+      LogType.DETAIL  -> "$defaultCharDetail $outputMsg"
+      LogType.DEBUG   -> "$defaultCharDebug $outputMsg"
+      else            -> outputMsg
     }
 
     var timePrefix = ""
@@ -384,11 +369,6 @@ class ShowMe(var mShowMeStatus: Boolean = true, var mTAG: String = "ShowMe", pri
             summaryList.add(summaryList.size, Pair(logcatType ?: defaultSummaryLogCatType, showMelog))
           }
         }
-
-        if (writeLog.orDefault()) writeLogFile(showMelog)  //write log even if it is not loggable
-
-        if (sendLog.orDefault()) sendLog(showMelog)  //send log even if it is not loggable
-
       }
       return showMelog
     }
@@ -438,188 +418,7 @@ class ShowMe(var mShowMeStatus: Boolean = true, var mTAG: String = "ShowMe", pri
       "☕ ⭐⭕✨❌⚡❎✅ 🎃 ⛔ 🚫 🔍🐞💩🔊💡✋⛔⌚⏰⌛⏳❓❔❗❕ " + "✊✋ ↻ ↺ ⏩⏪⏫⏬ ☣☢☠ ⓘ " + "🔧 💣 🔒 🔓🔔🏁🏆🎯  " + "🚩 🎌 ⛳ " + "💉🔮🎊🎉🎂 💰 💱 💲 💳 💴 💵 💶 💷 💸 " + "🚪 📨 📤 📥 📩 🔥☁ 👀 🌁⛅ 🎦🌋 " + "📌 📍📎 📜 📃 📄 📅 📆 📇🔃  ➿  ☔⚓ " + " ⚽⛄⛅⛎ ⛪⛲⛵⛺⛽ 💀 ☠ 👻 👽 👾 " + "🎅 💃 💁 💬 🍰 💎 💍  🏃   "
   }
 
-  //region ================ Fileman ================
 
-  private lateinit var mContext: Context
-
-  var SHOWME_DRIVE = FilemanDrivers.Internal.type
-  var SHOWME_FOLDER = "ShowMe"
-  var SHOWME_FILENAME = "ShowMeLogs.json"
-
-  var filemanActive: Boolean? = null
-  var filemanWM: FilemanWM? = null
-  var FILE_WRITE_APPEND = true
-
-
-  /**
-   * For writing log in file
-   *
-   * @param showFilemanLog -> If you want to see Fileman logs
-   * @param drive -> Use FilemanDrivers.SandBox / FilemanDrivers.Internal / FilemanDrivers.External
-   * @param useWorkManager -> Activate this if you want to use WorkManager + Coroutine for writing file
-   * @param viewLifecycleOwner -> To get WorkManager liveData observe output
-   */
-  fun addFileman(filemanActive: Boolean, showFilemanLog: Boolean? = false, context: Context, drive: Int?, folder: String?, filename: String?, append: Boolean?,
-                 useWorkManager: Boolean? = false, viewLifecycleOwner: LifecycleOwner? = null, defaultWriteLog:Boolean?=mDefaultWriteLog): Boolean {
-    mDefaultWriteLog = defaultWriteLog ?: mDefaultWriteLog
-    if(filemanActive) enableFileman() else disableFileman()
-    useWorkManager?.let { mUseWorkManagerFileman = it }
-    drive?.let { if (it <= FilemanDrivers.values().size) SHOWME_DRIVE = it }
-    folder?.let { SHOWME_FOLDER = it }
-    filename?.let { SHOWME_FILENAME = it }
-    append?.let { FILE_WRITE_APPEND = it }
-    this.mContext = context
-    if (showFilemanLog.orDefault(false)) FilemanLogger.enableLog() else FilemanLogger.disableLog()
-
-    if (mUseWorkManagerFileman.orDefault(false)) {
-      filemanWM = FilemanWM(context, viewLifecycleOwner)
-    }
-    return true
-  }
-
-  fun setDefaultWriteLog(value:Boolean){
-    mDefaultWriteLog = value
-  }
-
-  fun enableFilemanWorkManager() {
-    this.mUseWorkManagerFileman = true
-  }
-
-  fun disableFilemanWorkManager() {
-    this.mUseWorkManagerFileman = false
-  }
-
-  fun enableFileman() {
-    this.filemanActive = true
-  }
-
-  fun disableFileman() {
-    this.filemanActive = false
-  }
-
-
-  private fun isFilemanAvailable(): Boolean {
-    return if (!mUseWorkManagerFileman.orDefault(false)) {
-      ::mContext.isInitialized && this.filemanActive.orDefault(false)
-    } else {
-      ::mContext.isInitialized && filemanWM != null && this.filemanActive.orDefault(false)
-    }
-  }
-
-
-  fun writeLogFile(fileContent: String) {
-    if (!isFilemanAvailable()) {
-      dbc(false, "Fileman is not active", writeLog = false)
-      return
-    }
-    if (!mUseWorkManagerFileman.orDefault(false)) {
-      Fileman.write("$mShowMeTag: $fileContent\n", mContext, SHOWME_DRIVE, SHOWME_FOLDER, SHOWME_FILENAME, true)
-    } else {
-      filemanWM?.writeLaunch("$mShowMeTag $fileContent\n", mContext, SHOWME_DRIVE, SHOWME_FOLDER, SHOWME_FILENAME, append = FILE_WRITE_APPEND, withTimeout = false)
-    }
-  }
-
-
-  fun deleteLogFile(drive: Int? = SHOWME_DRIVE, folder: String? = SHOWME_FOLDER, filename: String? = SHOWME_FILENAME): Boolean {
-    if (drive!! <= FilemanDrivers.values().size) {
-      if (::mContext.isInitialized) {
-        Fileman.delete(mContext, drive, folder!!, filename!!)
-      }
-      return false
-    }
-    return false
-  }
-
-  fun readLogFile(drive: Int? = SHOWME_DRIVE, folder: String? = SHOWME_FOLDER, filename: String? = SHOWME_FILENAME): String? {
-    if (drive!! <= FilemanDrivers.values().size) {
-      if (::mContext.isInitialized) {
-        return Fileman.read(mContext, drive, folder ?: SHOWME_FOLDER, filename ?: SHOWME_FILENAME)
-      }
-      return ""
-    }
-    return ""
-  }
-
-  //endregion
-
-
-  //region ================ SENDER ================
-
-  private val baseCoroutineScope = CoroutineScope(Dispatchers.Default)
-
-  var mSenders: MutableList<Sender>? = mutableListOf()
-
-  /**
-   * @param sender              -> HTTP Sender
-   */
-  fun addSender(sender: Sender, defaultSendLog:Boolean?) {
-    defaultSendLog?.let {  mDefaultSendLog = defaultSendLog }
-    when (sender) {
-      is ShowMeHttpSender -> {
-        mSenders?.add(sender)
-      }
-      //      else -> d("Sender ${sender.getName} not available ")
-    }
-  }
-
-  fun getSenderById(id: String): Sender? {
-    return mSenders?.firstOrNull { sender -> sender.id == id }
-  }
-
-  fun pruneSenderWork(sender: ShowMeHttpSender) {
-    sender.workManager.pruneWork()
-  }
-
-  fun cancelSenderWork(sender: ShowMeHttpSender) {
-    sender.workManager.cancelAllWork()
-  }
-
-  fun pruneAllWorks() {
-    mSenders?.forEach { sender ->
-      if (sender is ShowMeHttpSender) {
-        sender.workManager.pruneWork()
-      }
-    }
-  }
-
-  fun cancelAllWorks() {
-    mSenders?.forEach { sender ->
-      if (sender is ShowMeHttpSender) {
-        sender.workManager.cancelAllWork()
-      }
-    }
-  }
-
-  private fun isSenderAvailable(sender: Sender?): Boolean {
-    return sender != null
-  }
-
-  private fun sendLog(logContent: String) {
-    baseCoroutineScope.launch(Dispatchers.Default) {
-      mSenders?.forEach { sender ->
-        if (isSenderAvailable(sender)) {
-          when (sender) {
-            is ShowMeHttpSender -> sender.sendLog(logContent)
-          }
-        }
-      }
-    }
-  }
-
-
-  /**
-   * User can send some content to a server using ShowMeHttpSender
-   */
-  fun sendContent(content: String) {
-    baseCoroutineScope.launch(Dispatchers.Default) {
-      mSenders?.forEach { sender ->
-        if (sender is ShowMeHttpSender) sender.sendLog(content)
-      }
-    }
-  }
-
-
-  //endregion
 
 
 }
