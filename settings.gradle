@@ -1,0 +1,3 @@
+include ':showmelite'
+include ':app'
+rootProject.name = "ShowMeLite"
