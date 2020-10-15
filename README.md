@@ -1,7 +1,8 @@
 # ShowMe library 
 
-[ ![Download](https://api.bintray.com/packages/3xcool/maven/com.3xcool.utility%3Ashowme/images/download.svg) ](https://bintray.com/3xcool/maven/com.3xcool.utility%3Ashowme/_latestVersion)
-
+ [ ![Download](https://api.bintray.com/packages/3xcool/maven/com.andrefilgs.showme/images/download.svg) ]
+ 
+ 
 ![](wiki_images/showme_icon_200.png) 
 
 
