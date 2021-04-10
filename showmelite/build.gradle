@@ -1,47 +1,63 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+//apply plugin: 'kotlin-android-extensions'
+//apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+//apply plugin: 'io.codearte.nexus-staging'
 
 def versionMajor = 2
 def versionMinor = 0
-def versionPatch = 1
+def versionPatch = 3
 
 def localProperties = new Properties()
 localProperties.load(project.rootProject.file('mylocal.properties').newDataInputStream())
 
+//Maven Central
 ext {
-    bintrayRepo = 'maven' // Name of the Bintray repo you created
-    bintrayName = 'com.3xcool.utility:showmelite' // Bintray package name
+    PUBLISH_GROUP_ID = 'com.3xcool'
+    PUBLISH_VERSION = "${versionMajor}.${versionMinor}.${versionPatch}"
+    PUBLISH_ARTIFACT_ID = 'showmelite'
 
-    publishedGroupId = 'com.3xcool.utility' // Group ID of the SDK which will be added in implementation line of gradle
-    artifact = 'showmelite' // Artifact ID of the SDK which will be added in implementation line of gradle
-    libraryVersion = '2.0.1' //versionMajor * 10000 + versionMinor * 100 + versionPatch  // Version of the library you created in Bintray
+    repoName = 'sonatype'
 
-    libraryName = 'ShowMeLite' // It is generally the module name
-    libraryDescription = 'Logger Library' // Small description of the library
+    libraryDescription = 'Logger Library'
+    libraryUrl = 'https://github.com/3xcool/showmelite'
 
-    siteUrl = 'https://github.com/3xcool/showmelite'
-    gitUrl = 'https://github.com/3xcool/showmelite'
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
 
     developerId = '3xcool'
     developerName = 'Andre Filgueiras'
     developerEmail = 'alg.filgueiras@gmail.com'
 
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-
-    //Bintray Credentials
-    bintrayUsername = localProperties.getProperty('BINTRAY_USERNAME')
-    bintrayUserOrg = localProperties.getProperty('BINTRAY_ORG')
-    bintrayApiKey = localProperties.getProperty('BINTRAY_API_KEY')
+    gitConnection = 'scm:git:github.com/3xcool/showmelite.git'
+    developerConnection = 'scm:git:ssh://github.com/3xcool/showmelite.git'
+    scmUrl = 'https://github.com/3xcool/showmelite'
 }
 
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
+
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file('filgs_key.keystore')
+            storePassword localProperties.getProperty("signing.password")
+            keyAlias localProperties.getProperty("signing.keyAlias")
+            keyPassword localProperties.getProperty("signing.password")
+        }
+
+        debug {
+            storeFile rootProject.file('filgs_key.keystore')
+            storePassword localProperties.getProperty("signing.password")
+            keyAlias localProperties.getProperty("signing.keyAlias")
+            keyPassword localProperties.getProperty("signing.password")
+        }
+    }
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
@@ -57,19 +73,23 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    testImplementation 'junit:junit:4.13'
+//    implementation fileTree(dir: "libs", include: ["*.jar"])
+//    implementation 'androidx.appcompat:appcompat:1.2.0'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
@@ -79,7 +99,7 @@ task deleteJar(type: Delete) {
     delete 'libs/jars/showmelite.jar'
 }
 
-//tutorial to create jar: https://stackoverflow.com/questions/21712714/how-to-make-a-jar-out-from-an-android-studio-project
+////tutorial to create jar: https://stackoverflow.com/questions/21712714/how-to-make-a-jar-out-from-an-android-studio-project
 task createJar(type: Copy) {
 //    from('build/intermediates/bundles/release/') //don't work
     from('build/intermediates/packaged-classes/release/')
@@ -90,5 +110,4 @@ task createJar(type: Copy) {
 
 createJar.dependsOn(deleteJar, build)
 
-
-apply from: 'bintray.script'
+apply from: "${rootProject.projectDir}/publish-mavencentral.gradle"

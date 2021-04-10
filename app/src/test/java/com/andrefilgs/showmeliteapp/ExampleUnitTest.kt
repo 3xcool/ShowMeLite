@@ -1,4 +1,4 @@
-package com.andrefilgs.showmelite
+package com.andrefilgs.showmeliteapp
 
 import org.junit.Test
 
