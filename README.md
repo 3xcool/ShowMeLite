@@ -1,7 +1,6 @@
 # ShowMe library 
 
- 
- [ ![Download](https://api.bintray.com/packages/3xcool/maven/com.3xcool.utility%3Ashowmelite/images/download.svg) ](https://bintray.com/3xcool/maven/com.3xcool.utility%3Ashowmelite/_latestVersion)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.3xcool/showmelite/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.3xcool/showmelite)
  
 ![](wiki_images/showme_icon_200.png) 
 
