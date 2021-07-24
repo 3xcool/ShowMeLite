@@ -343,21 +343,18 @@ class ShowMe(var mShowMeStatus: Boolean = true, var mTAG: String = "ShowMe", pri
     val isLoggable = isLoggable(logType, watcherType)
     val showMeLog = prepareLogMsg(msg, logType, wrapMsg, logId, withTimePrefix = withTimePrefix)
     showMeLog?.let {showMelog ->
-      if (isLoggable) {
-        if (mShowMeStatus.orDefault()) {
-          when (logcatType) {
-            LogcatType.VERBOSE -> Log.v(mShowMeTag, showMelog)
-            LogcatType.DEBUG -> Log.d(mShowMeTag, showMelog)
-            LogcatType.INFO -> Log.i(mShowMeTag, showMelog)
-            LogcatType.WARNING -> Log.w(mShowMeTag, showMelog)
-            LogcatType.ERROR -> Log.e(mShowMeTag, showMelog)
-            LogcatType.NONE -> {
-            } //do nothing
-          }
+      if (isLoggable && mShowMeStatus.orDefault()) {
+        when (logcatType) {
+          LogcatType.VERBOSE -> Log.v(mShowMeTag, showMelog)
+          LogcatType.DEBUG -> Log.d(mShowMeTag, showMelog)
+          LogcatType.INFO -> Log.i(mShowMeTag, showMelog)
+          LogcatType.WARNING -> Log.w(mShowMeTag, showMelog)
+          LogcatType.ERROR -> Log.e(mShowMeTag, showMelog)
+          LogcatType.NONE -> Unit
+        }
 
-          addSummary?.let{
-            summaryList.add(summaryList.size, Pair(logcatType ?: defaultSummaryLogCatType, showMelog))
-          }
+        if(addSummary.orDefault(false)){
+          summaryList.add(summaryList.size, Pair(logcatType ?: defaultSummaryLogCatType, showMelog))
         }
       }
       return showMelog
